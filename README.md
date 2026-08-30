@@ -86,39 +86,39 @@ Repo ya creado y con el primer commit subido: `git@github.com:alexburnar/67mates
 App creada: [appstoreconnect.apple.com/apps/6806802721/distribution](https://appstoreconnect.apple.com/apps/6806802721/distribution)
 - Nombre: `67Mates` · Idioma principal: Español (España) · Bundle ID: `com.alexburnar.sixsevenmates` (registrado en Certificates, Identifiers & Profiles) · Apple ID numérico: `6806802721`
 
-### 2.3 Conectar el repo en Codemagic
+### 2.3 Conectar el repo en Codemagic ✅ hecho
 
-1. Entra en [codemagic.io](https://codemagic.io) con el mismo equipo que usáis para BloomStrong
-2. **Add application** → conecta el repo `alexburnar/67mates` (GitHub)
-3. Cuando pregunte el tipo de proyecto, elige **"Flutter App" no** — elige el flujo de **configuración YAML** (este repo ya trae `codemagic.yaml` con el workflow `ios-release` definido, Codemagic lo detecta automáticamente)
-4. Verifica en **Team settings → Integrations** que la integración `codemagic_asc_api_key` (la misma de BloomStrong) sigue activa — si es la misma cuenta de Apple Developer, no hay que crear nada nuevo
+App `67mates` conectada en Codemagic (mismo team que BloomStrong/PoopNet), workflow `ios-release` detectado automáticamente desde `codemagic.yaml`.
+
+**Nota:** la GitHub App de Codemagic solo tenía acceso a repos concretos (BloomStrong, poop-netV1) — hubo que añadir `alexburnar/67mates` en [github.com/settings/installations](https://github.com/settings/installations) → Codemagic CI/CD → Configure → Repository access.
 
 ### 2.4 Rellenar el ASC_APP_ID ✅ hecho
 
-`ASC_APP_ID: "6806802721"` ya está puesto en `codemagic.yaml` — los builds incrementarán el número de versión automáticamente.
+`ASC_APP_ID: "6806802721"` ya está puesto en `codemagic.yaml` — los builds incrementan el número de versión automáticamente.
 
-### 2.5 Lanzar el build
+### 2.5 Certificado y perfil de firma ✅ hecho
 
-En Codemagic, workflow **"67Mates — iOS"** → **Start new build** (rama `main`). Con esto:
-- Instala dependencias, sincroniza Capacitor, instala CocoaPods
-- Firma automáticamente (Codemagic crea el certificado/perfil si no existen)
-- Compila el `.ipa`
-- Lo sube automáticamente a **TestFlight**
+Para un bundle id nuevo, Codemagic **no** auto-genera el certificado/perfil la primera vez pese a lo que sugiere la documentación de `ios_signing` — hubo que hacerlo a mano una única vez (los builds siguientes ya lo reutilizan solos):
+1. Codemagic → Personal Account → Settings → **Code signing identities** → iOS certificates → generado `67mates-distribution` con la key `codemagic_asc_api_key`
+2. Apple Developer Portal → Profiles → generado `67mates_app_store_profile` (App Store, bundle `com.alexburnar.sixsevenmates`, con el certificado anterior)
+3. Codemagic → Code signing identities → iOS provisioning profiles → **Fetch profiles** → importado ese perfil
 
-Tarda entre 10 y 20 minutos. Recibirás un email en `alexburnar@gmail.com` cuando termine.
+### 2.6 Build lanzado ✅ hecho — en TestFlight
 
-### 2.6 Añadir testers en TestFlight
+Primer build (`1.0 (1)`) compilado, firmado y subido a TestFlight con éxito. Grupo de testers **"Internal Testers"** creado con distribución automática activada, con `alexburnar` (usuario `ruma_vileta@hotmail.com` en el team) ya añadido. Cumplimiento de exportación respondido ("Ninguno de los algoritmos" — la app no usa cifrado propio); a partir de ahora esto queda automatizado vía `ITSAppUsesNonExemptEncryption=false` en el `Info.plist`.
 
-En App Store Connect → tu app → **TestFlight** → añade tu email (o el de quien vaya a probarla) como tester interno. Recibirá una invitación para instalar la app vía la app TestFlight — no hace falta esperar revisión de Apple para pruebas internas.
+El build tarda 10-30 min en terminar de procesar en Apple antes de que el tester pueda instalarlo desde la app TestFlight — revisa tu email o la app TestFlight.
 
 ---
 
-## Checklist para poder mandarlo a testear hoy
+## Checklist — estado real
 
 - [x] Push del repo a `git@github.com:alexburnar/67mates.git`
-- [ ] Activar GitHub Pages (Settings → Pages → main /docs) para la URL de privacidad
-- [x] Crear la app en App Store Connect (Apple ID `6806802721`) y copiar su Apple ID numérico
-- [ ] Conectar el repo en Codemagic y lanzar el workflow `ios-release`
-- [ ] Añadirte como tester interno en TestFlight
-- [ ] Compilar el `.aab` de Android aquí (`./gradlew bundleRelease`) y subirlo a Play Console → Prueba interna
-- [ ] Guardar `android/67mates-release.keystore` + `android/keystore.properties` en un sitio seguro fuera del proyecto
+- [ ] Activar GitHub Pages (Settings → Pages → main /docs) para la URL de privacidad — **pendiente, hazlo tú**
+- [x] Crear la app en App Store Connect (Apple ID `6806802721`)
+- [x] Conectar el repo en Codemagic y lanzar el workflow `ios-release`
+- [x] Certificado + perfil de firma generados e importados
+- [x] Build `1.0 (1)` compilado y subido a TestFlight
+- [x] Grupo "Internal Testers" creado, tú ya añadido como tester
+- [ ] Compilar el `.aab` de Android aquí (`./gradlew bundleRelease`) y subirlo a Play Console → Prueba interna — **pendiente, hazlo tú**
+- [ ] Guardar `android/67mates-release.keystore` + `android/keystore.properties` en un sitio seguro fuera del proyecto — **pendiente, hazlo tú**
