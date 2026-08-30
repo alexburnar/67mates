@@ -77,17 +77,14 @@ Completa el cuestionario IARC — al ser una app de ejercicios matemáticos sin 
 
 ## Parte 2 — iOS: Codemagic (build + TestFlight automáticos)
 
-### 2.1 Subir este proyecto a GitHub
+### 2.1 Subir este proyecto a GitHub ✅ hecho
 
-Ya tienes el repo vacío creado: `git@github.com:alexburnar/67mates.git`. En cuanto confirmes, hago el `git init` + commit + push desde aquí.
+Repo ya creado y con el primer commit subido: `git@github.com:alexburnar/67mates.git` (rama `main`).
 
-### 2.2 Crear la app en App Store Connect (esto solo lo puedes hacer tú — requiere tu Apple ID)
+### 2.2 Crear la app en App Store Connect ✅ hecho
 
-1. Ve a [appstoreconnect.apple.com](https://appstoreconnect.apple.com) → **Apps** → **+** → **Nueva app**
-2. Plataforma: iOS · Nombre: `67Mates` · Idioma principal: Español (España)
-3. Bundle ID: si `com.alexburnar.sixsevenmates` no aparece en la lista, pulsa "Registrar un nuevo bundle ID" en el enlace del formulario (o Codemagic lo registra solo en el primer build, ver 2.4)
-4. SKU: por ejemplo `sixsevenmates2026` (cualquier identificador interno único, no lo ve el usuario)
-5. Una vez creada, entra en la app → **App Information** y copia el **Apple ID** numérico (aparece como "Apple ID: 6XXXXXXXXX") — lo necesitas en el paso 2.5
+App creada: [appstoreconnect.apple.com/apps/6806802721/distribution](https://appstoreconnect.apple.com/apps/6806802721/distribution)
+- Nombre: `67Mates` · Idioma principal: Español (España) · Bundle ID: `com.alexburnar.sixsevenmates` (registrado en Certificates, Identifiers & Profiles) · Apple ID numérico: `6806802721`
 
 ### 2.3 Conectar el repo en Codemagic
 
@@ -96,9 +93,9 @@ Ya tienes el repo vacío creado: `git@github.com:alexburnar/67mates.git`. En cua
 3. Cuando pregunte el tipo de proyecto, elige **"Flutter App" no** — elige el flujo de **configuración YAML** (este repo ya trae `codemagic.yaml` con el workflow `ios-release` definido, Codemagic lo detecta automáticamente)
 4. Verifica en **Team settings → Integrations** que la integración `codemagic_asc_api_key` (la misma de BloomStrong) sigue activa — si es la misma cuenta de Apple Developer, no hay que crear nada nuevo
 
-### 2.4 (Opcional pero recomendado) Rellenar el ASC_APP_ID
+### 2.4 Rellenar el ASC_APP_ID ✅ hecho
 
-En `codemagic.yaml`, la variable `ASC_APP_ID` está vacía a propósito — así el primer build usa el número de build `1` sin depender de que la app ya exista. En cuanto tengas el Apple ID numérico del paso 2.2, edítalo en el propio `codemagic.yaml` (o como variable de entorno en la UI de Codemagic) para que los builds siguientes incrementen el número automáticamente y no choquen con uno ya subido.
+`ASC_APP_ID: "6806802721"` ya está puesto en `codemagic.yaml` — los builds incrementarán el número de versión automáticamente.
 
 ### 2.5 Lanzar el build
 
@@ -118,9 +115,9 @@ En App Store Connect → tu app → **TestFlight** → añade tu email (o el de 
 
 ## Checklist para poder mandarlo a testear hoy
 
-- [ ] Confirmarme que haga el push del repo a `git@github.com:alexburnar/67mates.git`
+- [x] Push del repo a `git@github.com:alexburnar/67mates.git`
 - [ ] Activar GitHub Pages (Settings → Pages → main /docs) para la URL de privacidad
-- [ ] Crear la app en App Store Connect y copiar su Apple ID numérico
+- [x] Crear la app en App Store Connect (Apple ID `6806802721`) y copiar su Apple ID numérico
 - [ ] Conectar el repo en Codemagic y lanzar el workflow `ios-release`
 - [ ] Añadirte como tester interno en TestFlight
 - [ ] Compilar el `.aab` de Android aquí (`./gradlew bundleRelease`) y subirlo a Play Console → Prueba interna

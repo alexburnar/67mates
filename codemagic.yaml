@@ -15,11 +15,8 @@ workflows:
       vars:
         BUNDLE_ID: "com.alexburnar.sixsevenmates"
         # ID numérico de App Store Connect (apps/<id>), NO el bundle id.
-        # Déjalo vacío hasta crear el registro de la app en App Store Connect
-        # (Fase 1 del README) — con vacío, el build usa siempre el número 1.
-        # En cuanto tengas el ID numérico, pégalo aquí para que el número de
-        # build se incremente solo en cada envío.
-        ASC_APP_ID: ""
+        # https://appstoreconnect.apple.com/apps/6806802721/distribution
+        ASC_APP_ID: "6806802721"
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.alexburnar.sixsevenmates
