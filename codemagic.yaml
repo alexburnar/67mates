@@ -34,11 +34,13 @@ workflows:
         script: cd ios/App && pod install
       - name: Preparar firma de código
         script: |
-          # El bloque ios_signing + integrations.app_store_connect ya resuelve
-          # certificado/perfil automáticamente antes de arrancar esta VM
-          # (preflight de Codemagic), incluso si el bundle id es nuevo y aún
-          # no existe en el portal de Apple Developer — Codemagic lo crea solo.
+          # Primer build de esta app: aún no existe perfil de aprovisionamiento
+          # para este bundle id, así que hay que pedirlo explícitamente con
+          # --create (el preflight automático de Codemagic solo reutiliza
+          # perfiles que ya existen, no los crea la primera vez). En builds
+          # futuros esto simplemente reutiliza el perfil ya creado.
           keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           keychain add-certificates
           xcode-project use-profiles --project ios/App/App.xcodeproj
       - name: Incrementar número de build
