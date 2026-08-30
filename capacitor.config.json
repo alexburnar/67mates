@@ -1,0 +1,10 @@
+{
+  "appId": "com.alexburnar.sixsevenmates",
+  "appName": "67Mates",
+  "webDir": "www",
+  "backgroundColor": "#0f0f11",
+  "ios": {
+    "contentInset": "always",
+    "backgroundColor": "#0f0f11"
+  }
+}

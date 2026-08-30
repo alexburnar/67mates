@@ -1,0 +1,22 @@
+node_modules/
+npm-debug.log
+.DS_Store
+
+# Credenciales de firma Android — NUNCA subir esto a git.
+# Sin este keystore no se puede volver a actualizar la app en Google Play
+# (Google no permite cambiar de keystore una vez publicada la primera vez),
+# así que además de estar en .gitignore, haz una copia de seguridad de
+# android/67mates-release.keystore y android/keystore.properties en un sitio
+# seguro fuera de este proyecto (gestor de contraseñas, disco cifrado, etc.).
+android/keystore.properties
+android/*.keystore
+android/*.jks
+*.keystore
+*.jks
+
+# Salidas de build
+android/app/build/
+android/build/
+android/.gradle/
+ios/App/build/
+ios/App/Pods/

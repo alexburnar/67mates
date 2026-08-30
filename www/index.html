@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="67Mates">
+<meta name="theme-color" content="#0f0f11">
+<title>67Mates</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f11; --surface: #18181c; --surface2: #222228;
+    --border: #2e2e38; --border2: #3e3e4e;
+    --text: #f0f0f4; --muted: #8888a0; --hint: #55556a;
+    --green: #4ade80; --green-bg: #0d2918; --green-border: #1a4a2e;
+    --red: #f87171; --red-bg: #2a0d0d; --red-border: #4a1a1a;
+    --amber: #fbbf24; --amber-bg: #2a1e00;
+    --blue: #60a5fa; --blue-bg: #0d1a2e; --blue-border: #1a3050;
+    --purple: #c084fc; --purple-bg: #1a0d2e; --purple-border: #3a1a5a;
+    --radius: 12px; --radius-lg: 18px;
+    --safe-top: env(safe-area-inset-top,0px); --safe-bottom: env(safe-area-inset-bottom,0px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html,body { height: 100%; }
+  body { font-family: 'Sora',sans-serif; background: var(--bg); color: var(--text);
+    min-height: 100vh; padding: calc(var(--safe-top) + 1.5rem) 1.25rem calc(var(--safe-bottom) + 2rem); }
+  #app { width: 100%; max-width: 580px; margin: 0 auto; }
+  .screen { display: none; } .screen.active { display: block; }
+
+  .logo { font-size: 13px; font-weight: 500; color: var(--hint); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 2rem; }
+  .page-title { font-size: 26px; font-weight: 600; color: var(--text); margin-bottom: .4rem; line-height: 1.2; }
+  .page-sub { font-size: 14px; color: var(--muted); margin-bottom: 2rem; }
+  .section-label { font-size: 11px; font-weight: 500; color: var(--hint); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .75rem; }
+
+  /* STREAK BANNER */
+  .streak-banner { display: flex; align-items: center; gap: 10px; background: var(--amber-bg);
+    border: 1px solid #3a2e00; border-radius: var(--radius); padding: .625rem 1rem;
+    margin-bottom: 1.5rem; font-size: 13px; color: var(--amber); font-weight: 500; }
+  .streak-fire { font-size: 20px; }
+  .streak-sub { font-size: 12px; color: #a07c10; font-weight: 400; margin-left: auto; }
+
+  /* OP GRID */
+  .op-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 1rem; }
+  .op-btn { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: .875rem .5rem; cursor: pointer; color: var(--text); font-family: 'DM Mono',monospace;
+    font-size: 20px; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: all .15s; }
+  .op-btn span.nm { font-family: 'Sora',sans-serif; font-size: 11px; color: var(--muted); }
+  .op-btn.selected { border-color: var(--blue); background: var(--blue-bg); }
+  .op-btn.selected span.nm { color: var(--blue); }
+
+  /* RESULT TYPE TOGGLE */
+  .result-type-row { display: flex; gap: 8px; margin-bottom: 2rem; }
+  .rt-btn { flex: 1; padding: .65rem .5rem; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); cursor: pointer; font-family: 'Sora',sans-serif; font-size: 13px;
+    color: var(--muted); text-align: center; transition: all .15s; }
+  .rt-btn.selected { border-color: var(--blue); background: var(--blue-bg); color: var(--blue); font-weight: 500; }
+
+  /* LEVEL GRID */
+  .level-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 2rem; }
+  .level-btn { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: .875rem; cursor: pointer; text-align: left; transition: all .15s; }
+  .level-btn.selected { border-color: var(--blue); background: var(--blue-bg); }
+  .lv-badge { font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 99px; display: inline-block; margin-bottom: 5px; }
+  .b-easy { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .b-hard { background: var(--amber-bg); color: var(--amber); }
+  .b-vhard { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+  .lv-name { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  .lv-ex { font-size: 11px; color: var(--muted); font-family: 'DM Mono',monospace; }
+  .level-btn.selected .lv-name { color: var(--blue); }
+  .level-btn.selected .lv-ex { color: var(--blue); opacity: .6; }
+
+  /* BUTTONS */
+  .btn-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .btn-row2 { display: flex; gap: 8px; }
+  .primary-btn { flex: 1; padding: 1rem 1.5rem; font-family: 'Sora',sans-serif; font-size: 15px;
+    font-weight: 600; background: var(--text); color: var(--bg); border: none;
+    border-radius: var(--radius); cursor: pointer; transition: all .15s; }
+  .primary-btn:hover { opacity: .9; }
+  .purple-btn { flex: 1; padding: 1rem 1.5rem; font-family: 'Sora',sans-serif; font-size: 15px;
+    font-weight: 600; background: var(--purple-bg); color: var(--purple);
+    border: 1px solid var(--purple-border); border-radius: var(--radius); cursor: pointer; transition: all .15s; }
+  .secondary-btn { padding: 1rem 1.25rem; font-family: 'Sora',sans-serif; font-size: 14px;
+    background: var(--surface); color: var(--muted); border: 1px solid var(--border);
+    border-radius: var(--radius); cursor: pointer; white-space: nowrap; }
+
+  /* QUIZ */
+  .quiz-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+  .back-quiz-btn { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: .5rem .875rem; font-family: 'Sora',sans-serif; font-size: 13px; color: var(--muted);
+    cursor: pointer; transition: all .15s; }
+  .back-quiz-btn:hover { color: var(--text); border-color: var(--border2); }
+  .q-counter { font-size: 13px; color: var(--muted); }
+  .infinite-badge { font-size: 12px; font-weight: 500; color: var(--purple); background: var(--purple-bg);
+    border: 1px solid var(--purple-border); border-radius: 99px; padding: 3px 10px; }
+
+  .prog-wrap { height: 3px; background: var(--surface2); border-radius: 99px; margin-bottom: 1.5rem; overflow: hidden; }
+  .prog-bar { height: 100%; background: var(--blue); border-radius: 99px; transition: width .4s; }
+
+  .eq-box { font-family: 'DM Mono',monospace; font-size: 30px; font-weight: 500; color: var(--text);
+    text-align: center; padding: 1.75rem; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); margin-bottom: 1.25rem; word-break: break-all; line-height: 1.3; }
+  .eq-op { color: var(--muted); }
+
+  .dots-row { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; font-size: 13px; color: var(--muted); }
+  .dot { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--border2); background: transparent; transition: all .2s; }
+  .dot.used { background: var(--red); border-color: var(--red); }
+  .dot.avail { background: var(--green); border-color: var(--green); }
+
+  /* ANSWER DISPLAY (replaces native input) */
+  .ans-row { display: flex; gap: 8px; margin-bottom: .75rem; }
+  .ans-display { flex: 1; font-family: 'DM Mono',monospace; font-size: 22px; padding: .875rem 1rem;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    color: var(--text); text-align: center; min-height: 54px; display: flex; align-items: center;
+    justify-content: center; transition: all .2s; user-select: none; position: relative; }
+  .ans-display.placeholder { color: var(--hint); font-size: 15px; font-family: 'Sora',sans-serif; }
+  .ans-display.correct { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+  .ans-display.wrong { border-color: var(--red); background: var(--red-bg); color: var(--red); }
+  .ans-display.warn { border-color: var(--amber); background: var(--amber-bg); color: var(--amber); }
+  .ans-display.active-input { border-color: var(--blue); }
+  .cursor { display: inline-block; width: 2px; height: 1em; background: var(--blue);
+    margin-left: 2px; animation: blink .9s step-end infinite; vertical-align: middle; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  .check-btn { padding: .875rem 1.25rem; font-family: 'Sora',sans-serif; font-size: 15px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    cursor: pointer; color: var(--text); white-space: nowrap; transition: all .15s; }
+  .check-btn:active { transform: scale(.97); }
+
+  /* NUMPAD */
+  .numpad { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 1rem; }
+  .np-btn { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1rem .5rem; font-family: 'DM Mono',monospace; font-size: 22px; color: var(--text);
+    cursor: pointer; text-align: center; transition: background .1s, transform .1s; user-select: none; }
+  .np-btn:active { background: var(--surface2); transform: scale(.95); }
+  .np-btn.np-zero { grid-column: span 1; }
+  .np-btn.np-del { font-family: 'Sora',sans-serif; font-size: 18px; color: var(--muted); }
+  .np-btn.np-dot { font-family: 'DM Mono',monospace; font-size: 26px; }
+  .np-btn.np-go { background: var(--surface2); border-color: var(--border2); color: var(--text);
+    font-family: 'Sora',sans-serif; font-size: 15px; font-weight: 600; }
+  .np-btn.np-go:active { background: var(--border); }
+
+  .feedback { font-size: 14px; min-height: 22px; margin-bottom: 1rem; font-weight: 500; }
+  .feedback.ok { color: var(--green); } .feedback.ko { color: var(--red); } .feedback.warn { color: var(--amber); }
+
+  .score-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); }
+
+  /* STOP INFINITE BTN */
+  .stop-btn { width: 100%; margin-top: 1rem; padding: .875rem; font-family: 'Sora',sans-serif;
+    font-size: 14px; background: var(--purple-bg); color: var(--purple);
+    border: 1px solid var(--purple-border); border-radius: var(--radius); cursor: pointer; }
+
+  /* RESULTS */
+  .res-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 1.25rem; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; }
+  .stat-lbl { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .stat-val { font-size: 26px; font-weight: 600; font-family: 'DM Mono',monospace; color: var(--text); }
+  .stat-val.g { color: var(--green); } .stat-val.r { color: var(--red); } .stat-val.p { color: var(--purple); }
+
+  /* RECORD BANNER */
+  .record-banner { display: none; align-items: center; gap: 10px; background: var(--amber-bg);
+    border: 1px solid #3a2e00; border-radius: var(--radius); padding: .625rem 1rem;
+    margin-bottom: 1.25rem; font-size: 13px; color: var(--amber); font-weight: 500; animation: popIn .4s ease; }
+  .record-banner.visible { display: flex; }
+  @keyframes popIn { from{transform:scale(.9);opacity:0} to{transform:scale(1);opacity:1} }
+
+  .review-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0;
+    border-bottom: 1px solid var(--border); font-family: 'DM Mono',monospace; font-size: 13px; }
+  .review-item .eq { flex: 1; color: var(--text); word-break: break-all; }
+  .review-item .ca { font-weight: 500; color: var(--green); }
+  .review-item .ur { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .ok-icon { color: var(--green); font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+  .ko-icon { color: var(--red); font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+
+  .again-btn { width: 100%; padding: 1rem; font-family: 'Sora',sans-serif; font-size: 15px; font-weight: 600;
+    background: var(--text); color: var(--bg); border: none; border-radius: var(--radius); cursor: pointer; margin-bottom: 10px; }
+  .retry-fail-btn { width: 100%; padding: 1rem; font-family: 'Sora',sans-serif; font-size: 14px; font-weight: 500;
+    background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border);
+    border-radius: var(--radius); cursor: pointer; margin-bottom: 10px; }
+  .retry-fail-btn:disabled { opacity: .35; cursor: default; }
+  .ghost-btn { width: 100%; padding: 1rem; font-family: 'Sora',sans-serif; font-size: 14px;
+    background: transparent; color: var(--muted); border: 1px solid var(--border);
+    border-radius: var(--radius); cursor: pointer; }
+
+  /* STATS */
+  .back-link { background: none; border: none; color: var(--muted); font-family: 'Sora',sans-serif;
+    font-size: 14px; cursor: pointer; padding: 0 0 1.5rem; display: flex; align-items: center; gap: 6px; }
+  .stats-big { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 2rem; }
+  .inf-stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 2rem; }
+
+  .daily-row { display: flex; align-items: center; gap: 10px; padding: 10px 0;
+    border-bottom: 1px solid var(--border); font-size: 13px; }
+  .daily-date { color: var(--muted); min-width: 80px; font-family: 'DM Mono',monospace; font-size: 12px; }
+  .daily-bar-wrap { flex: 1; height: 6px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+  .daily-bar { height: 100%; border-radius: 99px; background: var(--green); }
+  .daily-pct { font-family: 'DM Mono',monospace; font-weight: 500; color: var(--text); min-width: 40px; text-align: right; }
+  .daily-cnt { font-family: 'DM Mono',monospace; color: var(--muted); min-width: 55px; text-align: right; font-size: 12px; }
+  .no-data { font-size: 14px; color: var(--muted); padding: 1.5rem 0; }
+  .danger-link { background: none; border: none; color: var(--red); font-family: 'Sora',sans-serif;
+    font-size: 12px; cursor: pointer; padding: 1rem 0 0; opacity: .7; }
+
+  /* PROGRESS CHART */
+  .chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1rem; margin-bottom: 2rem; overflow: hidden; }
+  .chart-title { font-size: 11px; font-weight: 500; color: var(--hint); text-transform: uppercase;
+    letter-spacing: .1em; margin-bottom: .75rem; }
+  #progress-chart { width: 100%; height: 90px; display: block; }
+
+  /* BACK DIALOG */
+  .dialog-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    z-index: 100; align-items: center; justify-content: center; padding: 1.5rem; }
+  .dialog-box { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-lg);
+    padding: 1.75rem; max-width: 320px; width: 100%; text-align: center; }
+  .dialog-box p { font-size: 15px; color: var(--text); margin-bottom: 0.5rem; font-weight: 500; }
+  .dialog-box small { font-size: 13px; color: var(--muted); display: block; margin-bottom: 1.5rem; }
+  .dialog-btns { display: flex; gap: 8px; }
+  .dialog-btns button { flex: 1; padding: 0.875rem; border-radius: var(--radius); cursor: pointer;
+    font-family: 'Sora',sans-serif; font-size: 14px; font-weight: 500; border: none; }
+  .dialog-cancel { background: var(--surface2); color: var(--muted); border: 1px solid var(--border) !important; }
+  .dialog-confirm { background: var(--text); color: var(--bg); }
+
+  .divider { height: 1px; background: var(--border); margin: 2rem 0; }
+  .inf-section-title { font-size: 13px; font-weight: 500; color: var(--purple); display: flex;
+    align-items: center; gap: 8px; margin-bottom: 1rem; }
+
+  /* Records in stats */
+  .records-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 2rem; }
+  .rec-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: .75rem 1rem; }
+  .rec-lbl { font-size: 11px; color: var(--hint); margin-bottom: 3px; }
+  .rec-val { font-size: 18px; font-weight: 600; font-family: 'DM Mono',monospace; color: var(--amber); }
+  .rec-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- MENU -->
+  <div id="screen-menu" class="screen active">
+    <p class="logo">■ 67Mates</p>
+    <h1 class="page-title">Ejercicios de cálculo</h1>
+    <p class="page-sub">Elige operaciones y nivel de dificultad</p>
+
+    <div class="streak-banner" id="streak-banner" style="display:none">
+      <span class="streak-fire">🔥</span>
+      <span id="streak-text">Racha: 1 día</span>
+      <span class="streak-sub" id="streak-sub"></span>
+    </div>
+
+    <p class="section-label">Operaciones</p>
+    <div class="op-grid">
+      <button class="op-btn selected" data-op="+" onclick="toggleOp(this)">+<span class="nm">Suma</span></button>
+      <button class="op-btn selected" data-op="-" onclick="toggleOp(this)">−<span class="nm">Resta</span></button>
+      <button class="op-btn selected" data-op="×" onclick="toggleOp(this)">×<span class="nm">Multiplica</span></button>
+      <button class="op-btn selected" data-op="÷" onclick="toggleOp(this)">÷<span class="nm">Divide</span></button>
+    </div>
+
+    <p class="section-label">Tipo de resultado</p>
+    <div class="result-type-row">
+      <button class="rt-btn selected" data-rt="integer" onclick="selectResultType(this)">🔢 Solo enteros</button>
+      <button class="rt-btn" data-rt="decimal" onclick="selectResultType(this)">🔣 Solo decimales</button>
+      <button class="rt-btn" data-rt="both" onclick="selectResultType(this)">🎲 Ambos</button>
+    </div>
+
+    <p class="section-label">Nivel</p>
+    <div class="level-grid">
+      <button class="level-btn" data-level="easy1" onclick="selectLevel(this)">
+        <div class="lv-badge b-easy">Muy fácil</div>
+        <div class="lv-name">1 cifra</div><div class="lv-ex">2 × 3</div>
+      </button>
+      <button class="level-btn selected" data-level="easy2" onclick="selectLevel(this)">
+        <div class="lv-badge b-easy">Fácil</div>
+        <div class="lv-name">2 cifras</div><div class="lv-ex">22 × 34</div>
+      </button>
+      <button class="level-btn" data-level="medium" onclick="selectLevel(this)">
+        <div class="lv-badge b-easy">Medio</div>
+        <div class="lv-name">3 cifras</div><div class="lv-ex">222 × 314</div>
+      </button>
+      <button class="level-btn" data-level="hard" onclick="selectLevel(this)">
+        <div class="lv-badge b-hard">Difícil</div>
+        <div class="lv-name">4 cifras</div><div class="lv-ex">2222 × 3141</div>
+      </button>
+      <button class="level-btn" data-level="vhard" onclick="selectLevel(this)">
+        <div class="lv-badge b-vhard">Muy difícil</div>
+        <div class="lv-name">5 cifras</div><div class="lv-ex">22222 × 31415</div>
+      </button>
+    </div>
+
+    <div class="btn-row">
+      <button class="primary-btn" onclick="startQuiz(false)">▶ Empezar 10 preguntas</button>
+      <button class="secondary-btn" onclick="showScreen('screen-stats')">📊 Stats</button>
+    </div>
+    <div class="btn-row2">
+      <button class="purple-btn" onclick="startQuiz(true)">∞ Modo infinito</button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="screen-quiz" class="screen">
+    <div class="quiz-topbar">
+      <button class="back-quiz-btn" onclick="confirmBack()">← Inicio</button>
+      <span class="q-counter" id="q-counter">Pregunta 1 de 10</span>
+      <span class="infinite-badge" id="inf-badge" style="display:none">∞ Infinito</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+    <div class="eq-box" id="eq-box"></div>
+    <div class="dots-row">
+      <span>Intentos:</span>
+      <div class="dot avail" id="dot1"></div>
+      <div class="dot avail" id="dot2"></div>
+    </div>
+    <div class="ans-row">
+      <div class="ans-display active-input" id="ans-display">
+        <span id="ans-text"></span><span class="cursor" id="ans-cursor"></span>
+      </div>
+      <button class="check-btn" id="check-btn" onclick="checkOrNext()">✓ Comprobar</button>
+    </div>
+    <p class="feedback" id="feedback"></p>
+    <div class="numpad" id="numpad">
+      <button class="np-btn" onclick="npPress('7')">7</button>
+      <button class="np-btn" onclick="npPress('8')">8</button>
+      <button class="np-btn" onclick="npPress('9')">9</button>
+      <button class="np-btn" onclick="npPress('4')">4</button>
+      <button class="np-btn" onclick="npPress('5')">5</button>
+      <button class="np-btn" onclick="npPress('6')">6</button>
+      <button class="np-btn" onclick="npPress('1')">1</button>
+      <button class="np-btn" onclick="npPress('2')">2</button>
+      <button class="np-btn" onclick="npPress('3')">3</button>
+      <button class="np-btn np-dot" onclick="npPress('.')">·</button>
+      <button class="np-btn np-zero" onclick="npPress('0')">0</button>
+      <button class="np-btn np-del" onclick="npDel()">⌫</button>
+    </div>
+    <div class="score-row">
+      <span id="score-disp">Aciertos: 0</span>
+      <span id="rem-disp">Quedan: 10</span>
+    </div>
+    <button class="stop-btn" id="stop-btn" style="display:none" onclick="stopInfinite()">⏹ Parar y ver resultados</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="screen-results" class="screen">
+    <p class="section-label" id="res-label">Resultado del test</p>
+    <div class="res-grid">
+      <div class="stat-card"><div class="stat-lbl">Correctas</div><div class="stat-val g" id="res-c">0</div></div>
+      <div class="stat-card"><div class="stat-lbl">Incorrectas</div><div class="stat-val r" id="res-w">0</div></div>
+      <div class="stat-card"><div class="stat-lbl">Media</div><div class="stat-val" id="res-p">0%</div></div>
+    </div>
+    <div class="record-banner" id="record-banner">🏆 ¡Nuevo récord personal!</div>
+    <p class="section-label">Revisión</p>
+    <div id="review-list" style="margin-bottom:2rem"></div>
+    <button class="again-btn" id="again-btn" onclick="repeatMode()">↺ Repetir</button>
+    <button class="retry-fail-btn" id="retry-fail-btn" onclick="retryFailed()">✗ Repetir solo los fallos</button>
+    <button class="ghost-btn" onclick="goMenu()">Volver al menú</button>
+  </div>
+
+  <!-- STATS -->
+  <div id="screen-stats" class="screen">
+    <button class="back-link" onclick="goMenu()">← Volver</button>
+
+    <p class="section-label">Tests normales — total acumulado</p>
+    <div class="stats-big">
+      <div class="stat-card"><div class="stat-lbl">Tests hechos</div><div class="stat-val" id="st-tests">0</div></div>
+      <div class="stat-card"><div class="stat-lbl">Preguntas totales</div><div class="stat-val" id="st-total">0</div></div>
+      <div class="stat-card"><div class="stat-lbl">Correctas</div><div class="stat-val g" id="st-c">0</div></div>
+      <div class="stat-card"><div class="stat-lbl">Incorrectas</div><div class="stat-val r" id="st-w">0</div></div>
+    </div>
+
+    <p class="section-label">Récords por nivel</p>
+    <div class="records-grid" id="records-grid"></div>
+
+    <p class="section-label">Progreso — últimos 30 días</p>
+    <div class="chart-wrap">
+      <canvas id="progress-chart"></canvas>
+    </div>
+
+    <p class="section-label">Media diaria — últimos 7 días</p>
+    <div id="daily-list"></div>
+
+    <div class="divider"></div>
+
+    <div class="inf-section-title">∞ Modo infinito — total acumulado</div>
+    <div class="inf-stats-grid">
+      <div class="stat-card"><div class="stat-lbl">Sesiones</div><div class="stat-val p" id="inf-sessions">0</div></div>
+      <div class="stat-card"><div class="stat-lbl">Correctas</div><div class="stat-val g" id="inf-c">0</div></div>
+      <div class="stat-card"><div class="stat-lbl">Incorrectas</div><div class="stat-val r" id="inf-w">0</div></div>
+    </div>
+
+    <br>
+    <button class="danger-link" onclick="resetStats()">🗑 Borrar historial</button>
+  </div>
+
+  <!-- BACK DIALOG -->
+  <div class="dialog-overlay" id="back-dialog">
+    <div class="dialog-box">
+      <p>¿Volver al menú?</p>
+      <small>Se perderá el progreso actual</small>
+      <div class="dialog-btns">
+        <button class="dialog-cancel" onclick="closeDialog()">Cancelar</button>
+        <button class="dialog-confirm" onclick="closeDialog(); goMenu()">Volver</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+const STORAGE_KEY = 'mathquiz_v3';
+let selectedOps = new Set(['+','-','×','÷']);
+let selectedLevel = 'easy2';
+let resultType = 'integer';
+let questions = [], current = 0, correct = 0, answers = [], attemptsDone = 0, autoTimer = null;
+const MAX_ATTEMPTS = 2;
+let isInfinite = false;
+let infTotal = 0, infCorrect = 0;
+let inputLocked = false;
+let currentInput = '';
+
+// ---- Storage ----
+function loadData() {
+  try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : { tests: [], infinite: [], records: {}, streak: { last: null, count: 0 } }; }
+  catch(e) { return { tests: [], infinite: [], records: {}, streak: { last: null, count: 0 } }; }
+}
+function saveData(d) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e) {} }
+function todayStr() { return new Date().toISOString().slice(0,10); }
+
+function recordTest(c, t) {
+  const d = loadData();
+  d.tests.push({ date: todayStr(), correct: c, total: t });
+  if (d.tests.length > 500) d.tests.splice(0, d.tests.length - 500);
+  updateStreak(d);
+  saveData(d);
+}
+function recordInfinite(c, t) {
+  const d = loadData();
+  d.infinite.push({ date: todayStr(), correct: c, total: t });
+  if (d.infinite.length > 500) d.infinite.splice(0, d.infinite.length - 500);
+  updateStreak(d);
+  saveData(d);
+}
+
+// ---- Streak ----
+function updateStreak(d) {
+  if (!d.streak) d.streak = { last: null, count: 0 };
+  const today = todayStr();
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+  const yStr = yesterday.toISOString().slice(0,10);
+  if (d.streak.last === today) return;
+  if (d.streak.last === yStr) { d.streak.count++; }
+  else if (d.streak.last !== today) { d.streak.count = 1; }
+  d.streak.last = today;
+}
+
+function renderStreak() {
+  const d = loadData();
+  const s = d.streak || { last: null, count: 0 };
+  const today = todayStr();
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+  const yStr = yesterday.toISOString().slice(0,10);
+  const active = s.last === today || s.last === yStr;
+  const banner = document.getElementById('streak-banner');
+  if (!active || s.count < 1) { banner.style.display = 'none'; return; }
+  banner.style.display = 'flex';
+  const days = s.count;
+  document.getElementById('streak-text').textContent = `Racha: ${days} ${days === 1 ? 'día' : 'días'}`;
+  document.getElementById('streak-sub').textContent = s.last === today ? '¡Hoy ya has practicado!' : '¡No rompas la racha hoy!';
+}
+
+// ---- Records ----
+function getRecordKey() { return `${selectedLevel}_${Array.from(selectedOps).sort().join('')}`; }
+function loadRecord(key) {
+  const d = loadData();
+  return (d.records || {})[key] || null;
+}
+function saveRecord(key, pct) {
+  const d = loadData();
+  if (!d.records) d.records = {};
+  d.records[key] = pct;
+  saveData(d);
+}
+function checkRecord(correct, total) {
+  if (total === 0) return false;
+  const pct = Math.round(correct / total * 100);
+  const key = getRecordKey();
+  const prev = loadRecord(key);
+  if (prev === null || pct > prev) { saveRecord(key, pct); return true; }
+  return false;
+}
+
+// ---- Menu controls ----
+function toggleOp(btn) {
+  const op = btn.dataset.op;
+  if (selectedOps.has(op)) { if (selectedOps.size === 1) return; selectedOps.delete(op); btn.classList.remove('selected'); }
+  else { selectedOps.add(op); btn.classList.add('selected'); }
+}
+function selectLevel(btn) {
+  document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected'); selectedLevel = btn.dataset.level;
+}
+function selectResultType(btn) {
+  document.querySelectorAll('.rt-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected'); resultType = btn.dataset.rt;
+}
+
+// ---- Question generation ----
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function getRange() {
+  return { easy1:[1,9], easy2:[10,99], medium:[100,999], hard:[1000,9999], vhard:[10000,99999] }[selectedLevel];
+}
+function round2(n) { return Math.round(n * 100) / 100; }
+
+function generateQuestion() {
+  const ops = Array.from(selectedOps);
+  const op = ops[Math.floor(Math.random() * ops.length)];
+  const [min, max] = getRange();
+
+  let wantDecimal = false;
+  if (resultType === 'decimal') wantDecimal = true;
+  else if (resultType === 'both') wantDecimal = Math.random() < 0.5;
+
+  let a, b, result;
+
+  if (op === '+' || op === '-') {
+    if (wantDecimal) {
+      const dec1 = randInt(1,9) / 10;
+      const dec2 = randInt(1,9) / 10;
+      a = round2(randInt(min, max) + dec1);
+      b = round2(randInt(min, max) + dec2);
+      if (op === '-' && b > a) { let t = a; a = b; b = t; }
+      result = round2(op === '+' ? a + b : a - b);
+    } else {
+      a = randInt(min, max); b = randInt(min, max);
+      if (op === '-' && b > a) { let t = a; a = b; b = t; }
+      result = op === '+' ? a + b : a - b;
+    }
+  } else if (op === '×') {
+    if (wantDecimal) {
+      const dec1 = randInt(1,9) / 10;
+      const dec2 = randInt(1,9) / 10;
+      a = round2(randInt(min, max) + dec1);
+      b = round2(randInt(1, Math.min(9, Math.floor(max/10))) + dec2);
+      result = round2(a * b);
+    } else {
+      a = randInt(min, max); b = randInt(min, max);
+      result = a * b;
+    }
+  } else { // ÷ — FIX: always build a = b * quotient for clean or controlled decimals
+    const maxB = { easy1:9, easy2:12, medium:20, hard:50, vhard:100 }[selectedLevel];
+    b = randInt(2, maxB);
+    if (wantDecimal) {
+      // quotient has one decimal place → result is always x.0 or x.5
+      const wholeQ = randInt(Math.ceil(min/b), Math.floor(max/b));
+      const decimalPart = [0.1,0.2,0.25,0.5,0.75][randInt(0,4)];
+      a = round2(b * (wholeQ + decimalPart));
+      result = round2(a / b);
+    } else {
+      const q = randInt(Math.max(1, Math.ceil(min/b)), Math.floor(max/b));
+      a = b * q;
+      result = q;
+    }
+  }
+
+  return { a, b, op, result, isDecimal: wantDecimal };
+}
+
+// ---- Numpad ----
+function npPress(char) {
+  if (inputLocked) return;
+  if (char === '.' && currentInput.includes('.')) return;
+  if (char === '.' && currentInput === '') currentInput = '0';
+  if (currentInput.length >= 12) return;
+  currentInput += char;
+  renderAnsDisplay();
+}
+function npDel() {
+  if (inputLocked) return;
+  currentInput = currentInput.slice(0, -1);
+  renderAnsDisplay();
+}
+function renderAnsDisplay(state) {
+  const disp = document.getElementById('ans-display');
+  const txt = document.getElementById('ans-text');
+  const cur = document.getElementById('ans-cursor');
+  if (state) {
+    disp.className = 'ans-display ' + state;
+    cur.style.display = 'none';
+    txt.textContent = currentInput || '';
+  } else {
+    if (currentInput === '') {
+      disp.className = 'ans-display active-input placeholder';
+      txt.textContent = '';
+      cur.style.display = 'inline-block';
+    } else {
+      disp.className = 'ans-display active-input';
+      txt.textContent = currentInput;
+      cur.style.display = 'inline-block';
+    }
+  }
+}
+
+// ---- Quiz flow ----
+function startQuiz(infinite, failedQuestions) {
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+  isInfinite = infinite;
+  questions = []; current = 0; correct = 0; answers = [];
+  infTotal = 0; infCorrect = 0;
+  inputLocked = false; currentInput = '';
+
+  if (failedQuestions) {
+    // Retry mode: rebuild questions from failed answers
+    questions = failedQuestions;
+  } else if (!isInfinite) {
+    questions = Array.from({ length: 10 }, generateQuestion);
+  }
+
+  document.getElementById('inf-badge').style.display = isInfinite ? 'inline-block' : 'none';
+  document.getElementById('stop-btn').style.display = isInfinite ? 'block' : 'none';
+  document.querySelector('.prog-wrap').style.display = isInfinite ? 'none' : 'block';
+
+  showScreen('screen-quiz');
+  if (isInfinite) renderInfiniteQuestion();
+  else renderQuestion();
+}
+
+function renderQuestion() {
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+  attemptsDone = 0; updateDots();
+  inputLocked = false; currentInput = '';
+  const q = questions[current];
+  const total = questions.length;
+  document.getElementById('q-counter').textContent = `Pregunta ${current + 1} de ${total}`;
+  document.getElementById('eq-box').innerHTML = fmtQ(q);
+  renderAnsDisplay();
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('score-disp').textContent = `Aciertos: ${correct}`;
+  document.getElementById('rem-disp').textContent = `Quedan: ${total - current}`;
+  document.getElementById('prog-bar').style.width = (current / total * 100) + '%';
+  document.getElementById('check-btn').textContent = '✓ Comprobar';
+}
+
+function renderInfiniteQuestion() {
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+  attemptsDone = 0; updateDots();
+  inputLocked = false; currentInput = '';
+  const q = generateQuestion();
+  questions[current] = q;
+  document.getElementById('q-counter').textContent = `Pregunta ${current + 1}`;
+  document.getElementById('eq-box').innerHTML = fmtQ(q);
+  renderAnsDisplay();
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('score-disp').textContent = `Aciertos: ${infCorrect}`;
+  document.getElementById('rem-disp').textContent = `Total: ${infTotal}`;
+  document.getElementById('check-btn').textContent = '✓ Comprobar';
+}
+
+function fmtQ(q) {
+  return `${fmt(q.a)} <span class="eq-op">${q.op}</span> ${fmt(q.b)} <span class="eq-op">=</span> ?`;
+}
+function fmt(n) {
+  if (Number.isInteger(n)) return n.toLocaleString('es');
+  return n.toLocaleString('es', {minimumFractionDigits:1, maximumFractionDigits:2});
+}
+
+function updateDots() {
+  document.getElementById('dot1').className = 'dot ' + (attemptsDone >= 1 ? 'used' : 'avail');
+  document.getElementById('dot2').className = 'dot ' + (attemptsDone >= 2 ? 'used' : 'avail');
+}
+
+function checkOrNext() {
+  if (inputLocked && attemptsDone >= MAX_ATTEMPTS) { nextQuestion(); return; }
+  if (inputLocked) return;
+  const val = currentInput.trim();
+  if (val === '') return;
+
+  const userAns = parseFloat(val.replace(',', '.'));
+  const q = questions[current];
+  const isCorrect = Math.abs(userAns - q.result) < 0.011;
+
+  if (isCorrect) {
+    attemptsDone++; updateDots(); correct++;
+    if (isInfinite) { infCorrect++; infTotal++; }
+    renderAnsDisplay('correct');
+    inputLocked = true;
+    document.getElementById('feedback').textContent = '¡Correcto! Pasando a la siguiente...';
+    document.getElementById('feedback').className = 'feedback ok';
+    document.getElementById('score-disp').textContent = isInfinite ? `Aciertos: ${infCorrect}` : `Aciertos: ${correct}`;
+    if (!isInfinite) document.getElementById('rem-disp').textContent = `Quedan: ${questions.length - current - 1}`;
+    else document.getElementById('rem-disp').textContent = `Total: ${infTotal}`;
+    document.getElementById('check-btn').textContent = '→ Siguiente';
+    answers.push({ q, userAns, isCorrect: true, attempts: attemptsDone });
+    autoTimer = setTimeout(() => { autoTimer = null; nextQuestion(); }, 800);
+  } else {
+    attemptsDone++; updateDots();
+    if (attemptsDone < MAX_ATTEMPTS) {
+      renderAnsDisplay('warn');
+      setTimeout(() => { if (!inputLocked) { currentInput = ''; renderAnsDisplay(); } }, 400);
+      document.getElementById('feedback').textContent = 'Incorrecto, te queda 1 intento más. ¡Inténtalo de nuevo!';
+      document.getElementById('feedback').className = 'feedback warn';
+      setTimeout(() => { currentInput = ''; renderAnsDisplay(); }, 500);
+    } else {
+      if (isInfinite) infTotal++;
+      renderAnsDisplay('wrong');
+      inputLocked = true;
+      document.getElementById('feedback').textContent = `Incorrecto. La respuesta era ${fmt(q.result)}`;
+      document.getElementById('feedback').className = 'feedback ko';
+      if (!isInfinite) document.getElementById('rem-disp').textContent = `Quedan: ${questions.length - current - 1}`;
+      else document.getElementById('rem-disp').textContent = `Total: ${infTotal}`;
+      document.getElementById('check-btn').textContent = '→ Siguiente';
+      answers.push({ q, userAns, isCorrect: false, attempts: attemptsDone });
+    }
+  }
+}
+
+function nextQuestion() {
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+  current++;
+  if (isInfinite) { renderInfiniteQuestion(); }
+  else { if (current >= questions.length) showResults(false); else renderQuestion(); }
+}
+
+function stopInfinite() {
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+  recordInfinite(infCorrect, infTotal);
+  showResults(true);
+}
+
+// ---- Results ----
+function showResults(infinite) {
+  if (!infinite) {
+    document.getElementById('prog-bar').style.width = '100%';
+    recordTest(correct, questions.length);
+  }
+  const total = infinite ? infTotal : questions.length;
+  const c = infinite ? infCorrect : correct;
+
+  document.getElementById('res-label').textContent = infinite ? 'Resultado — Modo infinito' : 'Resultado del test';
+  document.getElementById('res-c').textContent = c;
+  document.getElementById('res-w').textContent = total - c;
+  document.getElementById('res-p').textContent = total > 0 ? Math.round(c / total * 100) + '%' : '—';
+  document.getElementById('again-btn').textContent = infinite ? '∞ Nueva sesión infinita' : '↺ Repetir mismo nivel';
+
+  // Record check (only normal tests)
+  const recBanner = document.getElementById('record-banner');
+  if (!infinite) {
+    const isRecord = checkRecord(c, total);
+    recBanner.classList.toggle('visible', isRecord);
+  } else {
+    recBanner.classList.remove('visible');
+  }
+
+  // Retry failed button
+  const failedQs = answers.filter(a => !a.isCorrect).map(a => a.q);
+  const retryBtn = document.getElementById('retry-fail-btn');
+  retryBtn.disabled = failedQs.length === 0;
+  retryBtn.textContent = failedQs.length > 0 ? `✗ Repetir ${failedQs.length} fallo${failedQs.length > 1 ? 's' : ''}` : '✓ ¡Sin fallos!';
+
+  // Review list
+  const list = document.getElementById('review-list');
+  list.innerHTML = '';
+  const show = answers.slice(-30);
+  show.forEach(({ q, userAns, isCorrect, attempts }) => {
+    const div = document.createElement('div'); div.className = 'review-item';
+    const lbl = isCorrect && attempts === 2 ? ' (2º intento)' : '';
+    div.innerHTML = `<span class="${isCorrect ? 'ok-icon' : 'ko-icon'}">${isCorrect ? '✓' : '✗'}</span>
+      <span class="eq">${fmt(q.a)} ${q.op} ${fmt(q.b)} = <span class="ca">${fmt(q.result)}</span>${lbl}</span>
+      ${!isCorrect ? `<span class="ur">Tú: ${userAns}</span>` : ''}`;
+    list.appendChild(div);
+  });
+  showScreen('screen-results');
+}
+
+function repeatMode() {
+  if (isInfinite) startQuiz(true); else startQuiz(false);
+}
+function retryFailed() {
+  const failedQs = answers.filter(a => !a.isCorrect).map(a => ({ ...a.q }));
+  if (failedQs.length === 0) return;
+  isInfinite = false;
+  startQuiz(false, failedQs);
+}
+
+// ---- Stats screen ----
+function renderStatsScreen() {
+  const d = loadData();
+  const h = d.tests || [], inf = d.infinite || [];
+
+  const tt = h.length, tq = h.reduce((s,e) => s+e.total, 0), tc = h.reduce((s,e) => s+e.correct, 0);
+  document.getElementById('st-tests').textContent = tt;
+  document.getElementById('st-total').textContent = tq;
+  document.getElementById('st-c').textContent = tc;
+  document.getElementById('st-w').textContent = tq - tc;
+
+  // Records grid
+  renderRecordsGrid(d);
+
+  // Progress chart (30 days)
+  renderProgressChart(h);
+
+  // Daily bars (7 days)
+  const dm = {};
+  h.forEach(e => { if(!dm[e.date]) dm[e.date]={correct:0,total:0}; dm[e.date].correct+=e.correct; dm[e.date].total+=e.total; });
+  const days = [];
+  for(let i=6;i>=0;i--){ const dd=new Date(); dd.setDate(dd.getDate()-i); days.push(dd.toISOString().slice(0,10)); }
+  const dl = document.getElementById('daily-list'); dl.innerHTML = ''; let any = false;
+  days.forEach(ds => {
+    const e = dm[ds]; if(!e) return; any = true;
+    const pct = Math.round(e.correct/e.total*100);
+    const [y,m,dd] = ds.split('-');
+    const dn = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][new Date(+y,+m-1,+dd).getDay()];
+    const div = document.createElement('div'); div.className = 'daily-row';
+    div.innerHTML = `<span class="daily-date">${dn} ${dd}/${m}</span>
+      <div class="daily-bar-wrap"><div class="daily-bar" style="width:${pct}%"></div></div>
+      <span class="daily-pct">${pct}%</span><span class="daily-cnt">${e.correct}/${e.total}</span>`;
+    dl.appendChild(div);
+  });
+  if(!any) dl.innerHTML = '<p class="no-data">Aún no hay datos. ¡Haz tu primer test!</p>';
+
+  // Infinite stats
+  const is = inf.length, ic = inf.reduce((s,e)=>s+e.correct,0), it = inf.reduce((s,e)=>s+e.total,0);
+  document.getElementById('inf-sessions').textContent = is;
+  document.getElementById('inf-c').textContent = ic;
+  document.getElementById('inf-w').textContent = it - ic;
+}
+
+function renderRecordsGrid(d) {
+  const records = d.records || {};
+  const levelNames = { easy1:'Muy fácil', easy2:'Fácil', medium:'Medio', hard:'Difícil', vhard:'Muy difícil' };
+  const grid = document.getElementById('records-grid');
+  grid.innerHTML = '';
+  const keys = Object.keys(records);
+  if (keys.length === 0) {
+    grid.innerHTML = '<p class="no-data" style="grid-column:span 2">Aún no hay récords. ¡Completa un test!</p>';
+    return;
+  }
+  keys.forEach(key => {
+    const [level] = key.split('_');
+    const pct = records[key];
+    const card = document.createElement('div'); card.className = 'rec-card';
+    card.innerHTML = `<div class="rec-lbl">${levelNames[level] || level}</div>
+      <div class="rec-val">${pct}%</div>
+      <div class="rec-sub">Mejor resultado</div>`;
+    grid.appendChild(card);
+  });
+}
+
+function renderProgressChart(tests) {
+  const canvas = document.getElementById('progress-chart');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth - 32;
+  const H = 90;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  // Build 30-day map
+  const dm = {};
+  tests.forEach(e => { if(!dm[e.date]) dm[e.date]={correct:0,total:0}; dm[e.date].correct+=e.correct; dm[e.date].total+=e.total; });
+  const days = [];
+  for(let i=29;i>=0;i--){ const dd=new Date(); dd.setDate(dd.getDate()-i); days.push(dd.toISOString().slice(0,10)); }
+
+  const pts = days.map(d => dm[d] ? Math.round(dm[d].correct/dm[d].total*100) : null);
+  const hasPts = pts.some(p => p !== null);
+
+  if (!hasPts) {
+    ctx.fillStyle = '#55556a';
+    ctx.font = '13px Sora, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Sin datos suficientes aún', W/2, H/2+5);
+    return;
+  }
+
+  const pad = { l: 4, r: 4, t: 8, b: 4 };
+  const cW = W - pad.l - pad.r;
+  const cH = H - pad.t - pad.b;
+  const step = cW / (days.length - 1);
+
+  // Horizontal grid lines
+  ctx.strokeStyle = '#2e2e38'; ctx.lineWidth = 1;
+  [0, 50, 100].forEach(v => {
+    const y = pad.t + cH - (v / 100 * cH);
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+  });
+
+  // Fill area
+  const grad = ctx.createLinearGradient(0, pad.t, 0, H);
+  grad.addColorStop(0, 'rgba(96,165,250,0.25)');
+  grad.addColorStop(1, 'rgba(96,165,250,0.0)');
+
+  // Collect valid consecutive segments
+  ctx.beginPath();
+  let started = false;
+  let firstValid = null;
+  pts.forEach((p, i) => {
+    if (p === null) return;
+    const x = pad.l + i * step;
+    const y = pad.t + cH - (p / 100 * cH);
+    if (!started) { ctx.moveTo(x, y); started = true; firstValid = { x, y }; }
+    else ctx.lineTo(x, y);
+  });
+  // close fill
+  const lastValidIdx = pts.map((p,i)=>p!==null?i:null).filter(v=>v!==null).pop();
+  if (lastValidIdx !== undefined) {
+    ctx.lineTo(pad.l + lastValidIdx * step, H - pad.b);
+    ctx.lineTo(firstValid.x, H - pad.b);
+    ctx.closePath();
+    ctx.fillStyle = grad; ctx.fill();
+  }
+
+  // Line
+  ctx.beginPath(); started = false;
+  ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 2; ctx.lineJoin = 'round';
+  pts.forEach((p, i) => {
+    if (p === null) { started = false; return; }
+    const x = pad.l + i * step;
+    const y = pad.t + cH - (p / 100 * cH);
+    if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Dots for existing points
+  pts.forEach((p, i) => {
+    if (p === null) return;
+    const x = pad.l + i * step;
+    const y = pad.t + cH - (p / 100 * cH);
+    ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI*2);
+    ctx.fillStyle = '#60a5fa'; ctx.fill();
+  });
+}
+
+function resetStats() {
+  if (!confirm('¿Borrar todo el historial?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  renderStatsScreen();
+  renderStreak();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'screen-stats') renderStatsScreen();
+  if (id === 'screen-menu') renderStreak();
+}
+function goMenu() {
+  if(autoTimer){clearTimeout(autoTimer);autoTimer=null;}
+  showScreen('screen-menu');
+}
+function confirmBack() { document.getElementById('back-dialog').style.display = 'flex'; }
+function closeDialog() { document.getElementById('back-dialog').style.display = 'none'; }
+
+// Physical keyboard support
+document.addEventListener('keydown', e => {
+  const quiz = document.getElementById('screen-quiz');
+  if (!quiz.classList.contains('active')) return;
+  if (e.key >= '0' && e.key <= '9') { npPress(e.key); return; }
+  if (e.key === '.' || e.key === ',') { npPress('.'); return; }
+  if (e.key === 'Backspace') { npDel(); return; }
+  if (e.key === 'Enter') { checkOrNext(); }
+});
+
+// Init
+renderStreak();
+</script>
+</body>
+</html>

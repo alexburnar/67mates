@@ -1,0 +1,72 @@
+definitions:
+  cache_paths: &cache_paths
+    - $HOME/.npm
+    - $HOME/Library/Caches/CocoaPods
+
+workflows:
+  # ── 67Mates — iOS: build + firma + subida automática a TestFlight ─────────
+  ios-release:
+    name: 67Mates — iOS
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: codemagic_asc_api_key   # misma integración de equipo que BloomStrong (Codemagic > Teams > Integrations)
+    environment:
+      vars:
+        BUNDLE_ID: "com.alexburnar.sixsevenmates"
+        # ID numérico de App Store Connect (apps/<id>), NO el bundle id.
+        # Déjalo vacío hasta crear el registro de la app en App Store Connect
+        # (Fase 1 del README) — con vacío, el build usa siempre el número 1.
+        # En cuanto tengas el ID numérico, pégalo aquí para que el número de
+        # build se incremente solo en cada envío.
+        ASC_APP_ID: ""
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.alexburnar.sixsevenmates
+      node: 20
+      xcode: latest
+      cocoapods: default
+    cache:
+      cache_paths: *cache_paths
+    scripts:
+      - name: Instalar dependencias npm
+        script: npm ci
+      - name: Sincronizar proyecto nativo iOS (Capacitor)
+        script: npx cap sync ios
+      - name: Instalar CocoaPods
+        script: cd ios/App && pod install
+      - name: Preparar firma de código
+        script: |
+          # El bloque ios_signing + integrations.app_store_connect ya resuelve
+          # certificado/perfil automáticamente antes de arrancar esta VM
+          # (preflight de Codemagic), incluso si el bundle id es nuevo y aún
+          # no existe en el portal de Apple Developer — Codemagic lo crea solo.
+          keychain initialize
+          keychain add-certificates
+          xcode-project use-profiles --project ios/App/App.xcodeproj
+      - name: Incrementar número de build
+        script: |
+          cd ios/App
+          LATEST_BUILD_NUMBER=0
+          if [ -n "$ASC_APP_ID" ]; then
+            LATEST_BUILD_NUMBER=$(app-store-connect get-latest-build-number "$ASC_APP_ID" || echo 0)
+          fi
+          agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
+      - name: Compilar .ipa
+        script: |
+          xcode-project build-ipa --workspace ios/App/App.xcworkspace --scheme App
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+      email:
+        recipients:
+          - alexburnar@gmail.com
+
+  # android-release: NO EXISTE A PROPÓSITO — Android se compila localmente en
+  # este mismo proyecto (ya tienes el SDK instalado) y se sube a mano a Play
+  # Console, igual que hacéis en BloomStrong/PoopNet. Ver README.md, sección
+  # "Android — build local y subida manual".
