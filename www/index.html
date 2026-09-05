@@ -96,6 +96,13 @@
   .infinite-badge { font-size: 12px; font-weight: 500; color: var(--purple); background: var(--purple-bg);
     border: 1px solid var(--purple-border); border-radius: 99px; padding: 3px 10px; }
 
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+  .layout-toggle { display: flex; gap: 4px; }
+  .layout-btn { padding: .4rem .55rem; font-family: 'DM Mono',monospace; font-size: 12px; font-weight: 500;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--muted);
+    cursor: pointer; transition: all .15s; }
+  .layout-btn.selected { border-color: var(--blue); background: var(--blue-bg); color: var(--blue); }
+
   .prog-wrap { height: 3px; background: var(--surface2); border-radius: 99px; margin-bottom: 1.5rem; overflow: hidden; }
   .prog-bar { height: 100%; background: var(--blue); border-radius: 99px; transition: width .4s; }
 
@@ -103,6 +110,13 @@
     text-align: center; padding: 1.75rem; background: var(--surface); border: 1px solid var(--border);
     border-radius: var(--radius-lg); margin-bottom: 1.25rem; word-break: break-all; line-height: 1.3; }
   .eq-op { color: var(--muted); }
+
+  /* VERTICAL LAYOUT (long multiplication / division style) */
+  .eq-vertical { display: inline-block; text-align: right; font-family: 'DM Mono',monospace; }
+  .eqv-row { display: flex; justify-content: flex-end; align-items: baseline; gap: .15em; }
+  .eqv-opcell { width: .9em; text-align: left; color: var(--muted); flex-shrink: 0; }
+  .eqv-line { border-top: 2px solid var(--border2); margin: .35em 0; width: 100%; }
+  .eqv-result { color: var(--muted); }
 
   .dots-row { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; font-size: 13px; color: var(--muted); }
   .dot { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--border2); background: transparent; transition: all .2s; }
@@ -146,6 +160,28 @@
   .feedback.ok { color: var(--green); } .feedback.ko { color: var(--red); } .feedback.warn { color: var(--amber); }
 
   .score-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); }
+
+  /* SCRATCHPAD (pizarra de trabajo) */
+  .scratchpad-toggle-btn { width: 100%; margin-top: 1rem; padding: .75rem; font-family: 'Sora',sans-serif;
+    font-size: 13px; font-weight: 500; background: var(--amber-bg); color: var(--amber);
+    border: 1px solid #3a2e00; border-radius: var(--radius); cursor: pointer; transition: all .15s; }
+  .scratchpad-wrap { margin-top: .75rem; }
+  .scratchpad-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0;
+    border-bottom: none; padding: .625rem; }
+  .sp-tool-btn { padding: .45rem .7rem; font-family: 'Sora',sans-serif; font-size: 12px; font-weight: 500;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 999px; color: var(--muted); cursor: pointer; }
+  .sp-tool-btn.selected { border-color: var(--amber); background: var(--amber-bg); color: var(--amber); }
+  .sp-colors { display: flex; gap: 6px; }
+  .sp-color { width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0; }
+  .sp-color.selected { border-color: var(--text); }
+  .sp-thickness { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); margin-left: auto; }
+  .sp-thickness input[type=range] { width: 70px; accent-color: var(--amber); }
+  .sp-clear-btn { padding: .45rem .7rem; font-family: 'Sora',sans-serif; font-size: 12px;
+    background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); border-radius: 999px; cursor: pointer; }
+  .scratch-canvas { display: block; width: 100%; height: 220px; background: #15151a;
+    border: 1px solid var(--border); border-radius: 0 0 var(--radius) var(--radius);
+    touch-action: none; cursor: crosshair; }
 
   /* STOP INFINITE BTN */
   .stop-btn { width: 100%; margin-top: 1rem; padding: .875rem; font-family: 'Sora',sans-serif;
@@ -301,7 +337,13 @@
     <div class="quiz-topbar">
       <button class="back-quiz-btn" onclick="confirmBack()">← Inicio</button>
       <span class="q-counter" id="q-counter">Pregunta 1 de 10</span>
-      <span class="infinite-badge" id="inf-badge" style="display:none">∞ Infinito</span>
+      <div class="topbar-right">
+        <div class="layout-toggle" id="layout-toggle">
+          <button class="layout-btn selected" data-layout="horizontal" onclick="setLayout('horizontal')" title="Horizontal">↔H</button>
+          <button class="layout-btn" data-layout="vertical" onclick="setLayout('vertical')" title="Vertical">↕V</button>
+        </div>
+        <span class="infinite-badge" id="inf-badge" style="display:none">∞ Infinito</span>
+      </div>
     </div>
     <div class="prog-wrap"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
     <div class="eq-box" id="eq-box"></div>
@@ -335,6 +377,29 @@
       <span id="score-disp">Aciertos: 0</span>
       <span id="rem-disp">Quedan: 10</span>
     </div>
+
+    <button class="scratchpad-toggle-btn" id="scratchpad-toggle" onclick="toggleScratchpad()">✏️ Abrir pizarra de trabajo</button>
+    <div class="scratchpad-wrap" id="scratchpad-wrap" style="display:none">
+      <div class="scratchpad-toolbar">
+        <button class="sp-tool-btn selected" id="sp-tool-pen" onclick="setScratchTool('pen')">✏️ Lápiz</button>
+        <button class="sp-tool-btn" id="sp-tool-eraser" onclick="setScratchTool('eraser')">🧹 Goma</button>
+        <div class="sp-colors" id="sp-colors">
+          <button class="sp-color selected" data-color="#f0f0f4" style="background:#f0f0f4" onclick="setScratchColor(this)"></button>
+          <button class="sp-color" data-color="#f87171" style="background:#f87171" onclick="setScratchColor(this)"></button>
+          <button class="sp-color" data-color="#60a5fa" style="background:#60a5fa" onclick="setScratchColor(this)"></button>
+          <button class="sp-color" data-color="#fbbf24" style="background:#fbbf24" onclick="setScratchColor(this)"></button>
+          <button class="sp-color" data-color="#4ade80" style="background:#4ade80" onclick="setScratchColor(this)"></button>
+          <button class="sp-color" data-color="#c084fc" style="background:#c084fc" onclick="setScratchColor(this)"></button>
+        </div>
+        <div class="sp-thickness">
+          <span>Grosor</span>
+          <input type="range" id="sp-thickness-range" min="2" max="16" value="4" oninput="setScratchThickness(this.value)">
+        </div>
+        <button class="sp-clear-btn" onclick="clearScratchpad()">✕ Borrar</button>
+      </div>
+      <canvas id="scratch-canvas" class="scratch-canvas"></canvas>
+    </div>
+
     <button class="stop-btn" id="stop-btn" style="display:none" onclick="stopInfinite()">⏹ Parar y ver resultados</button>
   </div>
 
@@ -414,6 +479,14 @@ let isInfinite = false;
 let infTotal = 0, infCorrect = 0;
 let inputLocked = false;
 let currentInput = '';
+let layoutMode = 'horizontal';
+
+// ---- Pizarra de trabajo (scratchpad) ----
+const SCRATCH_BG = '#15151a';
+let scratchOpen = false, scratchInitialized = false;
+let scratchTool = 'pen', scratchColor = '#f0f0f4', scratchThickness = 4;
+let scratchCtx = null, scratchDrawing = false, scratchLastPos = null;
+let scratchW = 0, scratchH = 220;
 
 // ---- Storage ----
 function loadData() {
@@ -636,6 +709,7 @@ function renderQuestion() {
   document.getElementById('rem-disp').textContent = `Quedan: ${total - current}`;
   document.getElementById('prog-bar').style.width = (current / total * 100) + '%';
   document.getElementById('check-btn').textContent = '✓ Comprobar';
+  clearScratchpad();
 }
 
 function renderInfiniteQuestion() {
@@ -652,14 +726,123 @@ function renderInfiniteQuestion() {
   document.getElementById('score-disp').textContent = `Aciertos: ${infCorrect}`;
   document.getElementById('rem-disp').textContent = `Total: ${infTotal}`;
   document.getElementById('check-btn').textContent = '✓ Comprobar';
+  clearScratchpad();
 }
 
 function fmtQ(q) {
+  if (layoutMode === 'vertical') return fmtQVertical(q);
   return `${fmt(q.a)} <span class="eq-op">${q.op}</span> ${fmt(q.b)} <span class="eq-op">=</span> ?`;
+}
+function fmtQVertical(q) {
+  return `<div class="eq-vertical">
+    <div class="eqv-row"><span class="eqv-opcell"></span><span>${fmt(q.a)}</span></div>
+    <div class="eqv-row"><span class="eqv-opcell">${q.op}</span><span>${fmt(q.b)}</span></div>
+    <div class="eqv-line"></div>
+    <div class="eqv-row"><span class="eqv-opcell"></span><span class="eqv-result">?</span></div>
+  </div>`;
 }
 function fmt(n) {
   if (Number.isInteger(n)) return n.toLocaleString('es');
   return n.toLocaleString('es', {minimumFractionDigits:1, maximumFractionDigits:2});
+}
+
+// ---- Layout toggle (horizontal / vertical) ----
+function setLayout(mode) {
+  layoutMode = mode;
+  try { localStorage.setItem('mathquiz_layout', mode); } catch(e) {}
+  document.querySelectorAll('.layout-btn').forEach(b => b.classList.toggle('selected', b.dataset.layout === mode));
+  const q = questions[current];
+  if (q) document.getElementById('eq-box').innerHTML = fmtQ(q);
+}
+function initLayoutPref() {
+  try { const saved = localStorage.getItem('mathquiz_layout'); if (saved) layoutMode = saved; } catch(e) {}
+  document.querySelectorAll('.layout-btn').forEach(b => b.classList.toggle('selected', b.dataset.layout === layoutMode));
+}
+
+// ---- Pizarra de trabajo (scratchpad) ----
+function toggleScratchpad() {
+  scratchOpen = !scratchOpen;
+  const wrap = document.getElementById('scratchpad-wrap');
+  const btn = document.getElementById('scratchpad-toggle');
+  wrap.style.display = scratchOpen ? 'block' : 'none';
+  btn.textContent = scratchOpen ? '✕ Cerrar pizarra' : '✏️ Abrir pizarra de trabajo';
+  if (scratchOpen) requestAnimationFrame(setupScratchCanvas);
+}
+function setupScratchCanvas() {
+  const canvas = document.getElementById('scratch-canvas');
+  if (!canvas) return;
+  const wrap = canvas.parentElement;
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.round(wrap.clientWidth);
+  const h = 220;
+  if (canvas.dataset.ready === '1' && scratchW === w) return; // ya montada a este ancho, no borrar el dibujo
+  scratchW = w; scratchH = h;
+  canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+  canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+  scratchCtx = canvas.getContext('2d');
+  scratchCtx.setTransform(1, 0, 0, 1, 0, 0);
+  scratchCtx.scale(dpr, dpr);
+  scratchCtx.lineCap = 'round'; scratchCtx.lineJoin = 'round';
+  scratchCtx.fillStyle = SCRATCH_BG;
+  scratchCtx.fillRect(0, 0, w, h);
+  canvas.dataset.ready = '1';
+  if (!scratchInitialized) { bindScratchEvents(canvas); scratchInitialized = true; }
+}
+function bindScratchEvents(canvas) {
+  canvas.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    scratchDrawing = true;
+    try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+    const pos = getScratchPos(canvas, e);
+    scratchLastPos = pos;
+    drawScratchDot(pos);
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!scratchDrawing) return;
+    e.preventDefault();
+    const pos = getScratchPos(canvas, e);
+    drawScratchLine(scratchLastPos, pos);
+    scratchLastPos = pos;
+  });
+  ['pointerup','pointerleave','pointercancel'].forEach(evt =>
+    canvas.addEventListener(evt, () => { scratchDrawing = false; scratchLastPos = null; }));
+}
+function getScratchPos(canvas, e) {
+  const rect = canvas.getBoundingClientRect();
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
+function drawScratchDot(pos) {
+  if (!scratchCtx) return;
+  scratchCtx.beginPath();
+  scratchCtx.fillStyle = scratchTool === 'eraser' ? SCRATCH_BG : scratchColor;
+  scratchCtx.arc(pos.x, pos.y, (scratchTool === 'eraser' ? scratchThickness * 2.2 : scratchThickness) / 2, 0, Math.PI * 2);
+  scratchCtx.fill();
+}
+function drawScratchLine(from, to) {
+  if (!scratchCtx || !from) return;
+  scratchCtx.strokeStyle = scratchTool === 'eraser' ? SCRATCH_BG : scratchColor;
+  scratchCtx.lineWidth = scratchTool === 'eraser' ? scratchThickness * 2.2 : scratchThickness;
+  scratchCtx.beginPath();
+  scratchCtx.moveTo(from.x, from.y);
+  scratchCtx.lineTo(to.x, to.y);
+  scratchCtx.stroke();
+}
+function setScratchTool(tool) {
+  scratchTool = tool;
+  document.getElementById('sp-tool-pen').classList.toggle('selected', tool === 'pen');
+  document.getElementById('sp-tool-eraser').classList.toggle('selected', tool === 'eraser');
+}
+function setScratchColor(btn) {
+  scratchColor = btn.dataset.color;
+  document.querySelectorAll('.sp-color').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  setScratchTool('pen');
+}
+function setScratchThickness(v) { scratchThickness = parseInt(v, 10); }
+function clearScratchpad() {
+  if (!scratchCtx) return;
+  scratchCtx.fillStyle = SCRATCH_BG;
+  scratchCtx.fillRect(0, 0, scratchW, scratchH);
 }
 
 function updateDots() {
@@ -962,6 +1145,7 @@ document.addEventListener('keydown', e => {
 
 // Init
 renderStreak();
+initLayoutPref();
 </script>
 </body>
 </html>
